@@ -4,10 +4,11 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Context
 
-This workspace is used for AI workflow automations and agent development. It
+This workspace is used for AI workflow automations and agent development.  It
 belongs to someone new to Claude Code and agent building, and it's an
 experimental learning space for practicing how to build and deploy agents
 and workflows hands-on.
+I will use it for research, content creation, and productivity workflows
 
 ## About Me
 
