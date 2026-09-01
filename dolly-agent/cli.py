@@ -10,40 +10,11 @@ and persona.py stay exactly as they are.
 from __future__ import annotations
 
 import log_store
-from core import CheckInContext, get_dolly_reply
-from log_store import ACTIVITY_HABITS, HABITS
-
-
-def _build_context() -> CheckInContext:
-    entries = log_store.read_entries()
-    today = log_store.today_local()
-    todays_entries = log_store.entries_for_date(entries, today)
-
-    already_morning = any(e.time_of_day == "morning" for e in todays_entries)
-    time_of_day = "evening" if already_morning else "morning"
-
-    streaks = {
-        habit: log_store.latest_streak(entries, habit)
-        for habit in HABITS
-        if habit != "sleep"
-    }
-
-    mornings_goals = [
-        e.habit
-        for e in todays_entries
-        if e.time_of_day == "morning" and e.habit in ACTIVITY_HABITS and e.status
-    ]
-
-    return CheckInContext(
-        today=today,
-        time_of_day=time_of_day,
-        streaks=streaks,
-        mornings_goals=mornings_goals,
-    )
+from core import build_todays_context, get_dolly_reply
 
 
 def main() -> None:
-    context = _build_context()
+    context = build_todays_context()
     print(
         f"(Starting Dolly's {context.time_of_day} check-in for "
         f"{context.today.isoformat()}. Type 'quit' to stop.)\n"
