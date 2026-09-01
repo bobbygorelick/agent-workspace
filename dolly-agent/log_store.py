@@ -76,7 +76,10 @@ def read_entries(path: str = DEFAULT_LOG_PATH) -> list[Entry]:
         block = block.strip()
         if not block or ":" not in block:
             continue
-        data = yaml.safe_load(block)
+        try:
+            data = yaml.safe_load(block)
+        except yaml.YAMLError:
+            continue
         if not isinstance(data, dict) or "date" not in data or "habit" not in data:
             continue
         entries.append(

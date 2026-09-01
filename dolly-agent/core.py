@@ -17,6 +17,7 @@ from datetime import date
 import anthropic
 from dotenv import load_dotenv
 
+import log_store
 from log_store import ACTIVITY_HABITS, Entry, HABITS
 from persona import build_system_prompt
 
@@ -31,6 +32,39 @@ class CheckInContext:
     time_of_day: str  # "morning" or "evening"
     streaks: dict  # habit name -> current streak count
     mornings_goals: list = field(default_factory=list)
+
+
+def build_todays_context() -> CheckInContext:
+    """Build today's CheckInContext straight from the log file.
+
+    Shared by every entry point (terminal, SMS) so morning/evening
+    detection and streak math can't drift between them.
+    """
+    entries = log_store.read_entries()
+    today = log_store.today_local()
+    todays_entries = log_store.entries_for_date(entries, today)
+
+    already_morning = any(e.time_of_day == "morning" for e in todays_entries)
+    time_of_day = "evening" if already_morning else "morning"
+
+    streaks = {
+        habit: log_store.latest_streak(entries, habit)
+        for habit in HABITS
+        if habit != "sleep"
+    }
+
+    mornings_goals = [
+        e.habit
+        for e in todays_entries
+        if e.time_of_day == "morning" and e.habit in ACTIVITY_HABITS and e.status
+    ]
+
+    return CheckInContext(
+        today=today,
+        time_of_day=time_of_day,
+        streaks=streaks,
+        mornings_goals=mornings_goals,
+    )
 
 
 @dataclass
